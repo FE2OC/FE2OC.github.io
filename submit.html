@@ -102,7 +102,7 @@ document.getElementById('submitForm').addEventListener('submit', async e => {
 
   // send to your Wasmer backend
   try {
-    const res = await fetch('https://your-wasmer-backend/submit-map', {
+    const res = await fetch('https://wasmerback-dfb61.wasmer.app/', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify(payload)
