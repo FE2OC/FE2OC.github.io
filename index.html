@@ -1,1 +1,71 @@
-test 
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>FE2OC Maps — index</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <aside class="sidebar glass">
+      <h1 class="logo">FE2OC</h1>
+      <input id="search" placeholder="search maps or creators..." autocomplete="off">
+      <label class="label">difficulty</label>
+      <select id="difficulty">
+        <option value="">any</option>
+        <option>Easy</option>
+        <option>Normal</option>
+        <option>Hard</option>
+        <option>Insane</option>
+        <option>Crazy</option>
+      </select>
+
+      <label class="label">sort by</label>
+      <select id="sortby">
+        <option value="name">name</option>
+        <option value="difficulty">difficulty</option>
+        <option value="creator">creator</option>
+      </select>
+
+      <div class="sidebar-actions">
+        <button id="randomBtn" class="btn">random map</button>
+        <a class="btn ghost" href="/submit.html">submit map</a>
+      </div>
+
+      <footer class="meta">
+        <small>powered by mintiler-dev / GitHub Pages</small>
+      </footer>
+    </aside>
+
+    <main class="content">
+      <header class="header glass small">
+        <h2>Maps Index</h2>
+        <p id="count">loading...</p>
+      </header>
+
+      <section id="mapsGrid" class="grid"></section>
+    </main>
+  </div>
+
+  <!-- modal -->
+  <div id="modal" class="modal">
+    <div class="modal-inner glass">
+      <button id="closeModal" class="close">✕</button>
+      <img id="modalThumb" src="" alt="thumbnail">
+      <div class="modal-info">
+        <h3 id="modalName"></h3>
+        <p class="muted" id="modalCreator"></p>
+        <span id="modalDifficulty" class="pill"></span>
+        <p id="modalDesc"></p>
+        <div class="modal-actions">
+          <button id="copyId" class="btn">copy id</button>
+          <a id="openMap" class="btn ghost" target="_blank" rel="noopener">open (if available)</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script src="main.js" type="module"></script>
+</body>
+</html>

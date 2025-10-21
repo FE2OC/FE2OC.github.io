@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Submit map — FE2OC</title>
+<link rel="stylesheet" href="style.css">
+<style>
+body {
+  margin:0;
+  font-family:sans-serif;
+  background: #111;
+  color: #fff;
+}
+.center-wrap {
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:100vh;
+  padding:1rem;
+}
+.glass {
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(12px);
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  max-width: 450px;
+  width:100%;
+}
+.glass input, .glass select, .glass textarea {
+  width:100%;
+  padding:0.5rem;
+  margin-top:0.25rem;
+  margin-bottom:1rem;
+  border:none;
+  border-radius:8px;
+  background:#222;
+  color:#fff;
+}
+.glass .btn {
+  background: orange;
+  color:#111;
+  border:none;
+  padding:0.5rem 1rem;
+  border-radius:8px;
+  cursor:pointer;
+  margin-right:0.5rem;
+  transition:0.2s;
+}
+.glass .btn:hover {
+  opacity:0.85;
+}
+.glass .btn.ghost {
+  background:none;
+  border:1px solid orange;
+  color:orange;
+}
+.preview {
+  text-align:center;
+  margin-bottom:1rem;
+}
+.preview img {
+  max-width:100%;
+  border-radius:8px;
+  margin-top:0.5rem;
+}
+.form-actions {
+  display:flex;
+  justify-content:flex-start;
+  align-items:center;
+}
+.muted {
+  color:#aaa;
+  font-size:0.85rem;
+}
+</style>
+</head>
+<body>
+  <div class="center-wrap">
+    <form id="submitForm" class="glass">
+      <h2>submit a map</h2>
+
+      <label>map name
+        <input name="name" required>
+      </label>
+
+      <label>creator
+        <input name="creator" required>
+      </label>
+
+      <label>intensity (1.0-<9.0, maps to FE2 difficulty)
+        <input name="intensity" type="number" step="0.1" min="1" max="9" required>
+      </label>
+
+      <label>unique id (use the map id)
+        <input name="id" required pattern="^[A-Za-z0-9_-]+$" title="letters, numbers, - or _">
+      </label>
+
+      <label>short description
+        <textarea name="description" rows="4"></textarea>
+      </label>
+
+      <label>thumbnail (png/jpg)
+        <input id="imageInput" name="image" type="file" accept="image/*" required>
+      </label>
+
+      <div id="previewWrap" class="preview">
+        <span class="muted">image preview</span>
+        <img id="previewImg" src="" alt="preview" />
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn">submit map</button>
+        <a href="/" class="btn ghost">back</a>
+      </div>
+
+      <small class="muted">submissions go through backend ahahaha</small>
+    </form>
+  </div>
+
+<script>
+const imageInput = document.getElementById('imageInput');
+const previewImg = document.getElementById('previewImg');
+
+imageInput.addEventListener('change', () => {
+  const f = imageInput.files[0];
+  if (!f) return;
+  previewImg.src = URL.createObjectURL(f);
+});
+
+async function fileToBase64(file) {
+  const arr = await file.arrayBuffer();
+  let binary = '';
+  const bytes = new Uint8Array(arr);
+  const chunk = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunk) {
+    binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+  }
+  return btoa(binary);
+}
+
+function intensityToDifficulty(i) {
+  const x = parseFloat(i);
+  if (x < 2) return 'Easy';
+  if (x < 3) return 'Normal';
+  if (x < 4) return 'Hard';
+  if (x < 5) return 'Insane';
+  if (x < 6) return 'Crazy';
+  if (x < 7) return 'Crazy+';
+  if (x < 8) return 'Extreme';
+  return 'Legendary';
+}
+
+document.getElementById('submitForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const intensity = fd.get('intensity');
+  const payload = {
+    name: fd.get('name'),
+    creator: fd.get('creator'),
+    difficulty: intensityToDifficulty(intensity),
+    intensity: parseFloat(intensity),
+    id: fd.get('id'),
+    description: fd.get('description') || ''
+  };
+  const file = fd.get('image');
+  if (!file) return alert('add an image');
+  payload.image_base64 = await fileToBase64(file);
+
+  try {
+    const res = await fetch('https://your-wasmer-backend/submit-map', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    });
+    if (res.ok) {
+      alert('submitted — thanks! your map will appear soon');
+      e.target.reset();
+      previewImg.src = '';
+    } else {
+      const text = await res.text();
+      console.error('submission failed', res.status, text);
+      alert('submission failed (check console)');
+    }
+  } catch(err) {
+    console.error(err);
+    alert('submission failed (check console)');
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,63 @@
+name: Add Map Submission
+
+on:
+  repository_dispatch:
+    types: [submit-map]
+
+permissions:
+  contents: write
+
+jobs:
+  add-map:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: Make folders
+        run: |
+          mkdir -p maps thumbnails
+
+      - name: Save thumbnail
+        run: |
+          echo "${{ github.event.client_payload.image_base64 }}" | base64 --decode > thumbnails/${{ github.event.client_payload.id }}.png
+
+      - name: Create map JSON (safe JSON generation)
+        env:
+          NAME: ${{ github.event.client_payload.name }}
+          CREATOR: ${{ github.event.client_payload.creator }}
+          DIFFICULTY: ${{ github.event.client_payload.difficulty }}
+          ID: ${{ github.event.client_payload.id }}
+          DESCRIPTION: ${{ github.event.client_payload.description }}
+        run: |
+          python3 - <<PY
+          import os, json
+          name = os.environ.get('NAME','').strip()
+          creator = os.environ.get('CREATOR','').strip()
+          difficulty = os.environ.get('DIFFICULTY','').strip()
+          mid = os.environ.get('ID','').strip()
+          description = os.environ.get('DESCRIPTION','').strip()
+          payload = {
+            "name": name,
+            "creator": creator,
+            "difficulty": difficulty,
+            "id": mid,
+            "thumbnail": f"https://mintiler-dev.github.io/thumbnails/{mid}.png",
+            "description": description
+          }
+          outpath = f"maps/{mid}.json"
+          with open(outpath, "w", encoding="utf-8") as f:
+            json.dump(payload, f, ensure_ascii=False, indent=2)
+          print("wrote", outpath)
+          PY
+
+      - name: Commit & push
+        run: |
+          git config user.name "fe2oc-bot"
+          git config user.email "actions@github.com"
+          git add maps thumbnails
+          git commit -m "Add map: ${{ github.event.client_payload.name }} (${{
+            github.event.client_payload.id }})" || echo "no changes"
+          git push || echo "push failed"
