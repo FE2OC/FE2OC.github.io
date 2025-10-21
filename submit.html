@@ -1,134 +1,137 @@
 <!doctype html>
 <html lang="en">
+
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Submit map — FE2OC</title>
-<link rel="stylesheet" href="style.css">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Submit map — FE2OC</title>
+    <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
-  <div class="center-wrap">
-    <form id="submitForm" class="glass form-card">
-      <h2>submit a map</h2>
+    <div class="center-wrap">
+        <form id="submitForm" class="glass form-card">
+            <h2>submit a map</h2>
 
-      <label>map name
-        <input name="name" required>
-      </label>
+            <label>map name
+                <input name="name" required>
+            </label>
 
-      <label>creator
-        <input name="creator" required>
-      </label>
+            <label>creator
+                <input name="creator" required>
+            </label>
 
-      <label>intensity (1.0-<9.0, maps to FE2 difficulty)
-        <input name="intensity" type="number" step="0.1" min="1" max="9" required>
-      </label>
+            <label>intensity (1.0-<9.0, maps to FE2 difficulty) <input name="intensity" type="number" step="0.1" min="1"
+                    max="9" required>
+            </label>
 
-      <label>unique id (use the map id)
-        <input name="id" required pattern="^[A-Za-z0-9_-]+$" title="letters, numbers, - or _">
-      </label>
+            <label>unique id (use the map id)
+                <input name="id" required pattern="^[A-Za-z0-9]+#[0-9]+$" title="format: username#mapindex">
+            </label>
 
-      <label>short description
-        <textarea name="description" rows="4"></textarea>
-      </label>
+            <label>short description
+                <textarea name="description" rows="4"></textarea>
+            </label>
 
-      <label>thumbnail (png/jpg)
-        <input id="imageInput" name="image" type="file" accept="image/*" required>
-      </label>
+            <label>thumbnail (png/jpg)
+                <input id="imageInput" name="image" type="file" accept="image/*" required>
+            </label>
 
-      <div id="previewWrap" class="preview">
-        <span class="muted">image preview</span>
-        <img id="previewImg" src="" alt="preview" />
-      </div>
+            <div id="previewWrap" class="preview">
+                <span class="muted">image preview</span>
+                <img id="previewImg" src="" alt="preview" />
+            </div>
 
-      <div class="form-actions">
-        <button type="submit" class="btn">submit map</button>
-        <a href="/" class="btn ghost">back</a>
-      </div>
+            <div class="form-actions">
+                <button type="submit" class="btn">submit map</button>
+                <a href="/" class="btn ghost">back</a>
+            </div>
 
-      <small class="muted">submissions go through backend (token hidden)</small>
-    </form>
-  </div>
+            <small class="muted">submissions go through backend (token hidden)</small>
+        </form>
+    </div>
 
-<script>
-const imageInput = document.getElementById('imageInput');
-const previewImg = document.getElementById('previewImg');
+    <script>
+        const imageInput = document.getElementById('imageInput');
+        const previewImg = document.getElementById('previewImg');
 
-imageInput.addEventListener('change', () => {
-  const f = imageInput.files[0];
-  if (!f) return;
-  previewImg.src = URL.createObjectURL(f);
-});
+        imageInput.addEventListener('change', () => {
+            const f = imageInput.files[0];
+            if (!f) return;
+            previewImg.src = URL.createObjectURL(f);
+        });
 
-// convert file to base64
-async function fileToBase64(file) {
-  const arr = await file.arrayBuffer();
-  let binary = '';
-  const bytes = new Uint8Array(arr);
-  const chunk = 0x8000;
-  for (let i = 0; i < bytes.length; i += chunk) {
-    binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
-  }
-  return btoa(binary);
-}
+        // convert file to base64
+        async function fileToBase64(file) {
+            const arr = await file.arrayBuffer();
+            let binary = '';
+            const bytes = new Uint8Array(arr);
+            const chunk = 0x8000;
+            for (let i = 0; i < bytes.length; i += chunk) {
+                binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+            }
+            return btoa(binary);
+        }
 
-// map intensity to FE2 difficulty
-function intensityToDifficulty(i) {
-  const x = parseFloat(i);
-  if (x < 2) return 'Easy';
-  if (x < 3) return 'Normal';
-  if (x < 4) return 'Hard';
-  if (x < 5) return 'Insane';
-  if (x < 6) return 'Crazy';
-  if (x < 7) return 'Crazy+';
-  if (x < 8) return 'Extreme';
-  return 'Legendary';
-}
+        // map intensity to FE2 difficulty
+        function intensityToDifficulty(i) {
+            const x = parseFloat(i);
+            if (x < 2) return 'Easy';
+            if (x < 3) return 'Normal';
+            if (x < 4) return 'Hard';
+            if (x < 5) return 'Insane';
+            if (x < 6) return 'Crazy';
+            if (x < 7) return 'Crazy+';
+            if (x < 8) return 'Extreme';
+            return 'Legendary';
+        }
 
-document.getElementById('submitForm').addEventListener('submit', async e => {
-  e.preventDefault();
-  const fd = new FormData(e.target);
-  const intensity = fd.get('intensity');
+        document.getElementById('submitForm').addEventListener('submit', async e => {
+            e.preventDefault();
+            const fd = new FormData(e.target);
+            const intensity = fd.get('intensity');
 
-  // prepare payload without base64; backend will handle image upload
-  const payload = {
-    name: fd.get('name'),
-    creator: fd.get('creator'),
-    difficulty: intensityToDifficulty(intensity),
-    intensity: parseFloat(intensity),
-    id: fd.get('id'),
-    description: fd.get('description') || ''
-  };
+            // prepare payload without base64; backend will handle image upload
+            const payload = {
+                name: fd.get('name'),
+                creator: fd.get('creator'),
+                difficulty: intensityToDifficulty(intensity),
+                intensity: parseFloat(intensity),
+                id: fd.get('id'),
+                description: fd.get('description') || ''
+            };
 
-  const file = fd.get('image');
-  if (!file) return alert('add an image');
+            const file = fd.get('image');
+            if (!file) return alert('add an image');
 
-  // convert file to base64 for backend upload only
-  payload.image_base64 = await fileToBase64(file);
+            // convert file to base64 for backend upload only
+            payload.image_base64 = await fileToBase64(file);
 
-  try {
-    const res = await fetch('https://wasmerback-dfb61.wasmer.app/', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify(payload)
-    });
+            try {
+                const res = await fetch('https://wasmerback-dfb61.wasmer.app/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
 
-    const data = await res.json();
+                const data = await res.json();
 
-    if (res.ok) {
-      alert('submitted — thanks! your map will appear soon');
-      console.log('image URL:', data.image_url); // backend returns public URL
-      e.target.reset();
-      previewImg.src = '';
-    } else {
-      console.error('submission failed', res.status, data);
-      alert('submission failed (check console)');
-    }
-  } catch(err) {
-    console.error(err);
-    alert('submission failed (check console)');
-  }
-});
+                if (res.ok) {
+                    alert('submitted — thanks! your map will appear soon');
+                    console.log('image URL:', data.image_url); // backend returns public URL
+                    e.target.reset();
+                    previewImg.src = '';
+                } else {
+                    console.error('submission failed', res.status, data);
+                    alert('submission failed (check console)');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('submission failed (check console)');
+            }
+        });
 
-</script>
+    </script>
 </body>
+
 </html>
