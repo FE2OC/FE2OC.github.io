@@ -59,6 +59,7 @@ imageInput.addEventListener('change', () => {
   previewImg.src = URL.createObjectURL(f);
 });
 
+// convert file to base64
 async function fileToBase64(file) {
   const arr = await file.arrayBuffer();
   let binary = '';
@@ -70,6 +71,7 @@ async function fileToBase64(file) {
   return btoa(binary);
 }
 
+// map intensity to FE2 difficulty
 function intensityToDifficulty(i) {
   const x = parseFloat(i);
   if (x < 2) return 'Easy';
@@ -98,6 +100,7 @@ document.getElementById('submitForm').addEventListener('submit', async e => {
   if (!file) return alert('add an image');
   payload.image_base64 = await fileToBase64(file);
 
+  // send to your Wasmer backend
   try {
     const res = await fetch('https://your-wasmer-backend/submit-map', {
       method: 'POST',
