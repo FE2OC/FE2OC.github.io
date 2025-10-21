@@ -88,6 +88,8 @@ document.getElementById('submitForm').addEventListener('submit', async e => {
   e.preventDefault();
   const fd = new FormData(e.target);
   const intensity = fd.get('intensity');
+
+  // prepare payload without base64; backend will handle image upload
   const payload = {
     name: fd.get('name'),
     creator: fd.get('creator'),
@@ -96,24 +98,29 @@ document.getElementById('submitForm').addEventListener('submit', async e => {
     id: fd.get('id'),
     description: fd.get('description') || ''
   };
+
   const file = fd.get('image');
   if (!file) return alert('add an image');
+
+  // convert file to base64 for backend upload only
   payload.image_base64 = await fileToBase64(file);
 
-  // send to your Wasmer backend
   try {
     const res = await fetch('https://wasmerback-dfb61.wasmer.app/', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify(payload)
     });
+
+    const data = await res.json();
+
     if (res.ok) {
       alert('submitted — thanks! your map will appear soon');
+      console.log('image URL:', data.image_url); // backend returns public URL
       e.target.reset();
       previewImg.src = '';
     } else {
-      const text = await res.text();
-      console.error('submission failed', res.status, text);
+      console.error('submission failed', res.status, data);
       alert('submission failed (check console)');
     }
   } catch(err) {
@@ -121,6 +128,7 @@ document.getElementById('submitForm').addEventListener('submit', async e => {
     alert('submission failed (check console)');
   }
 });
+
 </script>
 </body>
 </html>
