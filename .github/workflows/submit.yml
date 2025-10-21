@@ -20,9 +20,9 @@ jobs:
         run: |
           mkdir -p maps thumbnails
 
-      - name: Save thumbnail
+      - name: Download thumbnail
         run: |
-          echo "${{ github.event.client_payload.image_base64 }}" | base64 --decode > thumbnails/${{ github.event.client_payload.id }}.png
+          curl -L "${{ github.event.client_payload.image_url }}" -o "thumbnails/${{ github.event.client_payload.id }}.png"
 
       - name: Create map JSON (safe JSON generation)
         env:
@@ -58,6 +58,5 @@ jobs:
           git config user.name "fe2oc-bot"
           git config user.email "actions@github.com"
           git add maps thumbnails
-          git commit -m "Add map: ${{ github.event.client_payload.name }} (${{
-            github.event.client_payload.id }})" || echo "no changes"
+          git commit -m "Add map: ${{ github.event.client_payload.name }} (${{ github.event.client_payload.id }})" || echo "no changes"
           git push || echo "push failed"
