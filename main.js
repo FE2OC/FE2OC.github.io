@@ -1,5 +1,5 @@
 // main.js
-const MAPS_API = 'https://api.github.com/repos/mintiler-dev/fe2oc.github.io/contents/maps';
+const MAPS_API = 'https://api.github.com/repos/fe2oc/fe2oc.github.io/contents/maps';
 const mapsGrid = document.getElementById('mapsGrid');
 const searchInput = document.getElementById('search');
 const diffSelect = document.getElementById('difficulty');
